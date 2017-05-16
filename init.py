@@ -37,11 +37,12 @@ class Application(tornado.web.Application):
             'static_path': os.path.join(os.path.dirname(__file__), "static"),
             'template_path': os.path.join(os.path.dirname(__file__), "tpl"),
             'xsrf_cookies': True,
-            'cookie_secret': 'tokyo',
+            'cookie_secret': 'alex',
             'site_title': 'zkdash',
             'ui_modules': uimodule,
             'ui_methods': uimethods,
             'debug': OPTIONS.debug,
+            'login_url': "/auth/login/"
         }
         tornado.web.Application.__init__(self, routes, **settings)
 

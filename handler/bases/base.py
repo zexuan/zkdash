@@ -56,11 +56,6 @@ class BaseHandler(RequestHandler):
     def __init__(self, *argc, **argkw):
         super(BaseHandler, self).__init__(*argc, **argkw)
 
-    def get_current_user(self):
-        '''获取当前用户
-        '''
-        return "tokyo"
-
     def prepare(self):
         '''get/post前处理函数
         '''
@@ -70,6 +65,10 @@ class BaseHandler(RequestHandler):
         '''获取签名值
         '''
         return escape.xhtml_escape(self.xsrf_token)
+
+    def get_current_user(self):
+        return self.get_secure_cookie("user")
+
 
 
 class RestHandler(BaseHandler):
