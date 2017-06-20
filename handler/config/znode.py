@@ -88,10 +88,12 @@ class ZdZnodeShowHandler(CommonBaseHandler):
             if not zoo_client:
                 return self.ajax_popup(code=300, msg="连接zookeeper出错！")
             ZnodeService.get_znode_tree(zoo_client, normalized_path, nodes)
+	"""
 
         if normalized_path != "/" and len(nodes) <= 1:
             return self.ajax_popup(
                 code=300, msg="对不起，该节点路径下（%s）无数据！" % self.path)
+	"""
 
         for node in nodes:
             zk_node = ZdZnode.one(
