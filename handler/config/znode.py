@@ -25,7 +25,9 @@ from model.db.zd_zookeeper import ZdZookeeper
 from model.db.zd_qconf_feedback import ZdQconfFeedback
 from service import zookeeper as ZookeeperService
 from service import znode as ZnodeService
+from service import grant as ZGrantService
 from conf.settings import USE_QCONF
+from model.db.zd_grant import ZdGrant
 
 
 ############################################################
@@ -46,7 +48,14 @@ class ZdZnodeIndexHandler(CommonBaseHandler):
         clusters = ZdZookeeper.select().where(ZdZookeeper.deleted == "0")
         if clusters.count() < 1:
             return self.ajax_popup(code=300, msg="请先到zookeeper管理菜单下设置集群信息！")
+
+        username = self.current_user
+        sql_tpl = ("SELECT distinct cluster_name, path from zd_grant where tousername='{0}' and deleted=0 order by cluster_name, path")
+        sql = sql_tpl.format(username)
+        grants = ZdGrant.raw(sql)
+
         return self.render('config/znode/index.html',
+                        grants = grants,
                            clusters=clusters)
 
 
@@ -66,6 +75,9 @@ class ZdZnodeShowHandler(CommonBaseHandler):
         """
         nodes = []
         normalized_path = normalize_path(self.path)
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
 
         if USE_QCONF:
             ZnodeService.get_znode_tree_from_qconf(
@@ -109,6 +121,9 @@ class ZdZnodeViewHandler(CommonBaseHandler):
     def response(self):
         """获取zookeeper节点的节点值
         """
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         download_link = data = node_type = ""
 
         znode = ZdZnode.one(
@@ -144,6 +159,10 @@ class ZdZnodeAddHandler(CommonBaseHandler):
     def response(self):
         '''add
         '''
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.parent_path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
+
         return self.render('config/znode/add.html',
                            action='config/znode/save',
                            cluster_name=self.cluster_name,
@@ -164,6 +183,11 @@ class ZdZnodeEditHandler(CommonBaseHandler):
     def response(self):
         '''edit
         '''
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
+
         node_type = data = download_link = ""
 
         normalized_path = normalize_path(self.path)
@@ -208,6 +232,10 @@ class ZdZnodeEditTreeHandler(CommonBaseHandler):
     def response(self):
         '''batch edit
         '''
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
+
         child_znodes = ZnodeService.get_child_znodes(
             self.cluster_name, self.path)
         return self.render('config/znode/batchedit.html',
@@ -231,6 +259,10 @@ class ZdZnodeSyncstatusHandler(CommonBaseHandler):
     def response(self):
         '''客户端同步状况查看
         '''
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         # md5 value in zookeeper
         znode_value = ZookeeperService.get(self.cluster_name, self.path)
         znode_md5_value = hashlib.md5(znode_value).hexdigest()
@@ -274,6 +306,10 @@ class ZdZnodeMetadataHandler(CommonBaseHandler):
     def response(self):
         """获取zookeeper节点的元数据信息
         """
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         metainfo = dict()
         zk_node = ZdZnode.one(path=self.path, cluster_name=self.cluster_name)
         if zk_node:
@@ -300,6 +336,10 @@ class ZdZnodeSaveHandler(CommonBaseHandler):
     def response(self):
         '''save
         '''
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.parent_path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+        
         # node_name中不可包含`/`特殊字符
         if self.node_name and not ZnodeService.is_node_name_ok(self.node_name):
             return self.ajax_popup(code=300, msg="节点名不允许包含特殊字符'/'！")
@@ -348,6 +388,10 @@ class ZdZnodeBatchSaveHandler(CommonBaseHandler):
     def response(self):
         '''save
         '''
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.parent_path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         keys = self.get_arguments("key")
         values = self.get_arguments("value")
 
@@ -388,6 +432,10 @@ class ZdZnodeDeleteHandler(CommonBaseHandler):
     def response(self):
         '''delete
         '''
+        
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         # recursive or not
         recursive = self.recursive == "1"
         try:
@@ -417,6 +465,10 @@ class ZdZnodeDownloadHandler(CommonBaseHandler):
     def response(self):
         """download
         """
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         data = ZookeeperService.get(self.cluster_name, self.path)
         filename = "{}".format(self.path.rsplit('/')[-1])
         self.set_header('Content-Type', 'application/octet-stream')
@@ -439,6 +491,10 @@ class ZdZnodeExportHandler(CommonBaseHandler):
     def response(self):
         '''导出数据到文件中
         '''
+
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         data = ZookeeperService.get(self.cluster_name, self.path)
         filename = "{}".format(self.path.rsplit('/')[-1])
         self.set_header('Content-Type', 'application/octet-stream')

@@ -33,3 +33,48 @@ $("#search_config_btn").on("click", function(event){
     });
 });
 </script>
+
+
+
+<table class="table table-bordered table-hover table-striped table-top" data-toggle="tablefixed" data-layout-h="0">
+ <thead>
+  <tr>
+    <th data-order-field="cluster_name" align="left">集群</th>
+    <th data-order-field="path" align="left">路径</th>
+    <th data-order-field="go" align="left"></th>
+  </tr>
+ </thead>
+ <tbody>
+   {% for grant in grants %}
+   <tr>
+     <td> {{ grant.cluster_name }} </td>
+     <td> {{ grant.path }} </td>
+     <td>
+<script type="text/javascript">
+function openMytab(obj) {
+    var cluster, path;
+    cluster = $(obj).data("cluster_name");
+    path = $(obj).data("path");
+    $(obj).navtab({
+        url: "config/znode/displaytree",
+        id: "display_ztree",
+        fresh: true,
+        title: "配置信息",
+        loadingmask: true,
+        data: {cluster_name: cluster, path: path, _xsrf:$.cookie("_xsrf")},
+    });
+
+}
+</script>
+<button type="button" data-cluster_name="{{grant.cluster_name}}" data-path="{{  grant.path }}" class="btn btn-default" onclick="openMytab(this)">查看</button>
+     </td>
+   </tr>
+   {% end %}
+ </tbody>
+</table>
+<script type="text/javascript">
+$(function() {
+$("[data-class=gogogo]").on("click", function(event){
+});
+});
+</script>

@@ -21,6 +21,7 @@ from model.db.zd_snapshot import ZdSnapshot
 from service import snapshot as SnapshotService
 from service.snapshot import MakeSnapshotError
 from conf import log
+from service import grant as ZGrantService
 
 
 ############################################################
@@ -59,6 +60,9 @@ class ZdSnapshotTreeHandler(CommonBaseHandler):
     def response(self):
         """返回指定zookeeper集群的znode信息
         """
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         normalized_path = normalize_path(self.path)
         nodes = SnapshotService.get_snapshot_tree(self.cluster_name, normalized_path)
         if not nodes:
@@ -84,6 +88,9 @@ class ZdSnapshotViewHandler(CommonBaseHandler):
     def response(self):
         '''zookeeper上znode快照的查看
         '''
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         status_mapping = {
             "0": "备份中",
             "1": "最近使用"
@@ -116,6 +123,9 @@ class ZdSnapshotSaveHandler(CommonBaseHandler):
     def response(self):
         '''add
         '''
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         try:
             SnapshotService.make_snapshot(self.cluster_name, self.path)
             return self.ajax_ok(close_current=False)
@@ -157,6 +167,9 @@ class WsZnodeAddSnapshotHandler(CommonBaseHandler):
     def response(self):
         """根据父节点路径批量生成快照
         """
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         try:
             SnapshotService.make_snapshots_from_path(self.cluster_name, self.path)
             return self.ajax_ok(close_current=False)
@@ -180,6 +193,9 @@ class ZdSnapshotRollbackHandler(CommonBaseHandler):
     def response(self):
         """rollback
         """
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         if self.snapshot_id:
             snapshot = ZdSnapshot.one(id=self.snapshot_id)
         else:
@@ -210,6 +226,9 @@ class WsSnapshotDeleteNodesHandler(CommonBaseHandler):
     def response(self):
         """删除树节点节点
         """
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.node_path):
+            return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
+
         err_msg = SnapshotService.delete_snapshot_nodes(self.cluster_name,
                                                         self.node_path,
                                                         self.recursive)

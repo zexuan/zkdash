@@ -21,7 +21,10 @@ from lib import route
 from lib.excel import ExcelWorkBook
 from model.db.zd_zookeeper import ZdZookeeper
 from service import zookeeper as ZookeeperService
+from model.db.zd_grant import ZdGrant
 from conf import log
+from conf.settings import SUPERUSERS
+from datetime import datetime
 
 
 @route(r'/config/zookeeper/index', '查看')
@@ -149,6 +152,26 @@ class ZdZookeeperSaveHandler(CommonBaseHandler):
         if self.business:
             tb_inst.business = self.business
         tb_inst.save()
+
+        '''grant / permission to super user'''
+        if self.current_user in SUPERUSERS:
+            sql_tpl = ("SELECT cluster_name, path, tousername from zd_grant where tousername='{0}' and cluster_name='{1}' and deleted=0 and path='/' order by cluster_name, path")
+            sql = sql_tpl.format(self.current_user, self.cluster_name, "/")
+            grants = ZdGrant.raw(sql)
+            hasRoot = 0
+            for g in grants:
+                if "/".find(g.path) == 0:
+                    hasRoot = 1
+                    break
+            if 0 == hasRoot:
+                grant = ZdGrant(fromusername="",
+                        tousername=self.current_user,
+                        cluster_name=self.cluster_name,
+                        path="/",
+                        ctime=datetime.now(),
+                        deleted=0)
+                grant.save()
+
         return self.ajax_ok(forward="/config/zookeeper/index")
 
 
