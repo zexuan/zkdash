@@ -11,6 +11,7 @@ All rights reserved.
 """
 import os
 import hashlib
+import operator
 
 import json
 from tornado.web import authenticated
@@ -102,7 +103,9 @@ class ZdZnodeShowHandler(CommonBaseHandler):
                 node['data'] = ZookeeperService.get(
                     self.cluster_name, node["path"])
 
-        znodes_data = json.dumps(nodes)
+        new_nodes = sorted(nodes, key=operator.itemgetter("path"))
+
+        znodes_data = json.dumps(new_nodes)
         return self.render('config/znode/displaytree.html',
                            cluster_name=self.cluster_name,
                            znodes_data=znodes_data)
