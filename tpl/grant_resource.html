@@ -1,0 +1,22 @@
+<div class="bjui-pageContent tableContent">
+    <table data-toggle="tablefixed" data-width="100%">
+        <thead>
+            <tr>
+                <th data-order-field="cluster_name">集群名称</th>
+                <th data-order-field="path">路径</th>
+                <th width="74">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grant in grants %}
+            <tr>
+                <td>{{ grant.cluster_name }}</td>
+                <td>{{ grant.path }}</td>
+                <td>
+                    <a href="javascript:;" data-toggle="lookupback"  data-args="{'cluster_name': '{{grant.cluster_name}}', 'path': '{{grant.path}}'}" class="btn btn-blue" title="选择本项" data-icon="check">选择</a>
+                </td>
+            </tr>
+            {% end %}
+        </tbody>
+    </table>
+</div>

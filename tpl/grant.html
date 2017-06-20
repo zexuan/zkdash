@@ -1,0 +1,30 @@
+ <form class="form-horizontal" role="form" action="{{ action }}"  data-toggle="validate" data-reload-navtab="true" data-alertmsg="false">
+  {% raw xsrf_form_html() %}
+<div class="navtabPage unitBox" style="margin-top: 10px">
+  <div class="panel panel-default">
+    <div class="panel-heading">授权管理</div>
+    <div class="panel-body">
+      <div class="bjui-searchBar" id="config_searcher">
+          <label>用户名:</label>
+          <select name="tousername" id="name" data-toggle="selectpicker"  data-rule="required">
+          <option value="">选择用户</option>
+          {% for record in records %}
+          <option value="{{ record.username}}">{{ record.username }}</option>
+          {% end %}
+          </select>
+          &nbsp;
+          <label>集群:</label>
+          <input type="text" name="cluster_name" size="15" data-toggle="lookup" data-url="/auth/grant/resource" data-width="600" data-height="300"  data-rule="required" readonly>
+          &nbsp;
+          <label>父节点名称:</label>
+          <input type="text" name="path" size="15" data-width="600" data-height="300"  data-rule="required" readonly>
+          &nbsp;
+          <label>子节点路径:</label>
+          <input class="form-control" type="text" name="child_path" value="" placeholder="可以为空" size="25">
+          &nbsp;
+          <button type="submit" id="search_config_btn" data-loading-mask="true" class="btn btn-default">授权</button>&nbsp;
+      </div>
+    </div>
+  </div>
+</div>
+</form>
