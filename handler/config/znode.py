@@ -342,7 +342,7 @@ class ZdZnodeSaveHandler(CommonBaseHandler):
         '''save
         '''
 
-        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.parent_path):
+        if not ZGrantService.has_permission(self.current_user, self.cluster_name, self.path):
             return self.ajax_popup(code=300, msg="对不起，你没有该路径权限")
         
         # node_name中不可包含`/`特殊字符
